@@ -1,0 +1,74 @@
+{
+  "name": "liquidity-mapper-fast-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "author": "Karl",
+  "description": "Double-click wrapper that opens the LiquidityMapperFast client (browser engine, this branch's UI) in its own window.",
+  "type": "module",
+  "main": "dist/main.js",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node --test dist/site-server.test.js",
+    "start": "tsc -p tsconfig.json && electron .",
+    "pack": "node --experimental-strip-types pack.mts",
+    "pack:win": "node --experimental-strip-types pack.mts -- --win zip",
+    "pack:linux": "node --experimental-strip-types pack.mts -- --linux dir"
+  },
+  "build": {
+    "appId": "io.github.liquiditymapperfast.desktop",
+    "productName": "LiquidityMapperFast",
+    "copyright": "MIT",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*.js",
+      "!dist/**/*.test.js"
+    ],
+    "extraResources": [
+      {
+        "from": "site",
+        "to": "site"
+      }
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "executableName": "LiquidityMapperFast",
+      "target": [
+        {
+          "target": "dir",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Finance"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "public.app-category.finance"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "electron": "33.4.11",
+    "electron-builder": "25.1.8",
+    "typescript": "^5.7.2"
+  }
+}

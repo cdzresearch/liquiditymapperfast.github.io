@@ -16,6 +16,17 @@
 </head>
 <body>
   <div id="app"></div>
+  <!-- Module workers cannot start from file://, so a double-clicked index.html stays blank. Say so before boot.ts runs. -->
+  <script>
+    if (location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('app');
+        if (!el) return;
+        el.style.cssText = 'font:16px/1.45 system-ui,sans-serif;padding:2rem;max-width:36rem';
+        el.textContent = 'Do not open this file in Chrome. Double-click start.bat (Windows) or start.sh (Mac/Linux). That serves the page at http://127.0.0.1:5173/ so the tape can load.';
+      });
+    }
+  </script>
   <script type="module" src="./boot.ts"></script>
 </body>
 </html>
