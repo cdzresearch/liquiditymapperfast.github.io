@@ -17,4 +17,6 @@ npm run pack
 - **Linux:** run `desktop/release/linux-unpacked/LiquidityMapperFast`.
 - **Mac:** `npm run pack -- -- --mac zip` on a Mac (this Linux packer skips a signed `.app`).
 
-`HLM_DESKTOP_OUT=/opt/cursor/artifacts npm run pack` also copies the zip, the Linux folder, and a static-site zip with `start.sh` / `start.bat`.
+`HLM_DESKTOP_OUT=/opt/cursor/artifacts npm run pack` also copies a static-site zip with `start.sh` / `start.bat`. The Windows zip is ~108 MB; some mounts reject a single file that large, so the packer also writes 50 MB split parts when a full copy fails.
+
+CI on this PR uploads `LiquidityMapperFast-*-win.zip` as the **LiquidityMapperFast-win** Actions artifact (Actions tab of the run, not git).

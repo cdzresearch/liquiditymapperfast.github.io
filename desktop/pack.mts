@@ -74,6 +74,12 @@ if (out) {
       await copyOut(path.join(release, name), path.join(out, name));
     } catch (err) {
       console.warn(`could not copy ${name} to HLM_DESKTOP_OUT:`, err);
+      if (name.endsWith('.zip')) {
+        const partsDir = path.join(out, 'LiquidityMapperFast-win');
+        await mkdir(partsDir, { recursive: true });
+        await run('split', ['-b', '50M', '-d', '-a', '2', path.join(release, name), path.join(partsDir, `${name}.`)], desktop);
+        console.warn(`wrote 50 MiB split parts under ${partsDir}`);
+      }
     }
   }
   const zipDir = path.join(out, 'liquiditymapperfast-site');
