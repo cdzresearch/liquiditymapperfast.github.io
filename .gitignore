@@ -16,3 +16,9 @@ example_images/
 Research_Files/
 Research_Results/
 Research_Findings.md
+
+# Desktop wrapper: install, compiled JS, the copied site, and packed apps stay local
+desktop/node_modules/
+desktop/dist/
+desktop/site/
+desktop/release/
