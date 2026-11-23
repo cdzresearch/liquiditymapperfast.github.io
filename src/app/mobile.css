@@ -212,6 +212,7 @@ html[data-layout^="phone"] main[data-tab="depth"] .pane.depth:not([hidden]),
 html[data-layout^="phone"] main[data-tab="oi"] .pane.oi:not([hidden]),
 html[data-layout^="phone"] main[data-tab="delta"] .pane.delta:not([hidden]),
 html[data-layout^="phone"] main[data-tab="ls"] .pane.ls:not([hidden]),
+html[data-layout^="phone"] main[data-tab="tapeSpeed"] .pane.tapeSpeed:not([hidden]),
 html[data-layout^="phone"] main[data-tab="lt"] .pane.lt:not([hidden]),
 html[data-layout^="phone"] main[data-tab="stats"] .pane.bars:not([hidden]) { display: flex; flex: 0 0 var(--dock-size, 40%) !important; min-height: 0 !important; }
 
@@ -265,6 +266,9 @@ html[data-layout="phone-landscape"] main[data-tab="flow"] .pane.cvd:not([hidden]
 html[data-layout="phone-landscape"] main[data-tab="book"] .pane.ladder:not([hidden]),
 html[data-layout="phone-landscape"] main[data-tab="depth"] .pane.depth:not([hidden]),
 html[data-layout="phone-landscape"] main[data-tab="oi"] .pane.oi:not([hidden]),
+html[data-layout="phone-landscape"] main[data-tab="delta"] .pane.delta:not([hidden]),
+html[data-layout="phone-landscape"] main[data-tab="ls"] .pane.ls:not([hidden]),
+html[data-layout="phone-landscape"] main[data-tab="tapeSpeed"] .pane.tapeSpeed:not([hidden]),
 html[data-layout="phone-landscape"] main[data-tab="lt"] .pane.lt:not([hidden]),
 html[data-layout="phone-landscape"] main[data-tab="stats"] .pane.bars:not([hidden]) { display: flex; grid-column: 3; grid-row: 1; flex: none !important; }
 html[data-layout="phone-landscape"] .dock { grid-column: 2; grid-row: 2; flex-direction: column; justify-content: flex-start; width: 60px; border-top: 0; border-left: 1px solid var(--line); padding-right: env(safe-area-inset-right); overflow-y: auto; }
@@ -290,6 +294,7 @@ html[data-layout^="phone"] .pane-head strong { font-size: 13px; }
 /* The flow column's span buttons become a menu on a phone. */
 html[data-layout^="phone"] .pane.cvd .cvd-seg { display: none; }
 html[data-layout^="phone"] .pane.cvd .cvd-span-select { display: inline-block; }
+html[data-layout^="phone"] .pane.cvd .pane-head .tape-speed { min-width: 0; }
 html[data-layout^="phone"] .pane-head .readout { order: 9; flex: 1 0 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; padding-bottom: 3px; }
 /* A control's name is a small caption above it: there is no room beside it, and "Auto · 100" alone does not say what it sets. */
 html[data-layout^="phone"] .pane-head .ctl { display: flex; flex-direction: column; align-items: stretch; gap: 1px; font-size: 9.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }

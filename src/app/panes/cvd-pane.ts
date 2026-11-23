@@ -34,6 +34,10 @@ import { drawVenueMark } from '../venue-marks.ts';
 import type { RangeTool } from '../range/tool.ts';
 import { pageNow, replaying } from '../replay/clock.ts';
 import { flowEndChange, type FlowEnd } from '../cvd/flash.ts';
+import { setHtml } from './lower-panes.ts';
+import { snapshot } from '../tape/speed.ts';
+import { speedCompactHtml } from '../tape/speed-text.ts';
+import { setTip } from '../tip.ts';
 
 const SANS = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif', MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 const PAD = 6, LINE_H = 12;
@@ -117,6 +121,8 @@ export class CvdPane {
   #spanButtons = new Map<CvdSpan, HTMLButtonElement>();
   #spanSelect = el('select', { class: 'cvd-span-select', ariaLabel: t('Time span') });
   #gear = el('button', { type: 'button', class: 'icon-btn cvd-gear', ariaLabel: t('Settings'), tip: t('How the column ranks and draws the exchanges.') });
+  /** Live tape speed (prints / s) beside the title, the same numbers as the Tape tab and the Speed pane. */
+  #speed = el('span', { class: 'tape-speed readout' });
   /** Bursts the alert engine has seen, drawn as markers on their rows (set from outside; newest last). */
   events: readonly BurstEvent[] = [];
   #timer = 0;
@@ -214,7 +220,8 @@ export class CvdPane {
     this.#spanSelect.onchange = () => this.#set({ span: this.#spanSelect.value as CvdSpan });
     this.#gear.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>';
     this.#gear.onclick = () => { this.#panel = togglePanel(this.#gear, { title: t('Flow column'), width: 380, align: 'left', onClose: () => { this.#panel = null; } }, (_tools, body) => this.#buildSettings(body)); };
-    this.controls.append(el('strong', { textContent: t('Flow'), tip: t('Taker flow: cumulative volume delta (market buys minus market sells) per exchange, spot and perpetual. Biggest exchanges first; the top row adds them all.') }), seg, this.#spanSelect, this.#gear, helpButton('cvd'));
+    this.controls.append(el('strong', { textContent: t('Flow'), tip: t('Taker flow: cumulative volume delta (market buys minus market sells) per exchange, spot and perpetual. Biggest exchanges first; the top row adds them all.') }), this.#speed, seg, this.#spanSelect, this.#gear, helpButton('cvd'));
+    setTip(this.#speed, t('How many market orders print per second, regardless of size: the tape\'s pace, not dollars traded.'));
     this.#syncControls();
   }
   #syncControls(): void {
@@ -363,7 +370,12 @@ export class CvdPane {
 
   // ---- drawing --------------------------------------------------------------------------------------------------------------------
 
+  #writeSpeed(): void {
+    setHtml(this.#speed, speedCompactHtml(snapshot(this.hub.speed, pageNow(), this.store.state.tapeSpeed.nowMs)));
+  }
+
   #render(): void {
+    this.#writeSpeed();
     if (this.root.hidden || this.#w < 60 || this.#h < 60) return;
     const s = this.store.state, cfg = s.cvd, now = pageNow(), p = this.#palette, ctx = this.#ctx;
     this.#ranker.refreshMs = cfg.refreshMin * 60_000; this.#ranker.auto = cfg.auto;

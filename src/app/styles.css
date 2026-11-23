@@ -196,9 +196,10 @@ main { --side-w: max(420px, 19.1vw); --flow-w: max(300px, 19.1vw); display: grid
 /* On the desktop the title and its "?" share the first line with the gear at the end of it, and the span buttons take the second line whole
    (a phone swaps the buttons for a select). */
 html[data-layout="desktop"] .pane.cvd .pane-head strong { order: 0; }
-html[data-layout="desktop"] .pane.cvd .pane-head button.help { order: 1; margin-left: 0; }
-html[data-layout="desktop"] .pane.cvd .pane-head .cvd-gear { order: 2; margin-left: auto; }
-html[data-layout="desktop"] .pane.cvd .pane-head .cvd-seg { order: 3; flex: 1 1 100%; }
+html[data-layout="desktop"] .pane.cvd .pane-head .tape-speed { order: 1; flex: 1 1 auto; min-width: 11.5em; font-variant-numeric: tabular-nums; }
+html[data-layout="desktop"] .pane.cvd .pane-head button.help { order: 2; margin-left: 0; }
+html[data-layout="desktop"] .pane.cvd .pane-head .cvd-gear { order: 3; margin-left: auto; }
+html[data-layout="desktop"] .pane.cvd .pane-head .cvd-seg { order: 4; flex: 1 1 100%; }
 html[data-layout="desktop"] .pane.cvd .pane-head .cvd-seg button { flex: 1 1 0; }
 /* The book's Recenter sits at the end of the first line, beside the title and the "?", not alone on the last one. */
 .pane.ladder .pane-head .recenter-btn { margin-left: auto; }
@@ -213,6 +214,9 @@ html[data-layout="desktop"] .pane.cvd .pane-head .cvd-seg button { flex: 1 1 0; 
 .pane-head .readout b { color: var(--text); }
 .pane-head .readout b.bid { color: var(--bid); }
 .pane-head .readout b.ask { color: var(--ask); }
+.pane-head .readout b.hot { color: var(--caution); }
+.pane-head .readout b.cool { color: var(--muted); }
+.pane-head .tape-speed { font-variant-numeric: tabular-nums; }
 /* Six controls fill this header: its figures (Bid, Ask, imbalance) take a line under them instead of the sliver that is left. */
 html[data-layout="desktop"] .pane.lt .pane-head .readout { flex: 1 0 100%; order: 9; padding-bottom: 2px; }
 .ctl { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }

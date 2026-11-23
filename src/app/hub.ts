@@ -21,6 +21,7 @@ import { PRINTS_PER_ANSWER } from '../shared/prints.ts';
 import { webGet } from '../shared/history.ts';
 import { KeyLevelHistory } from './keylevels/history.ts';
 import { TapeRing, tapeCapacity } from './tape/ring.ts';
+import { TapeSpeed } from './tape/speed.ts';
 import { isPhone } from './device.ts';
 import type { SumRow } from '../shared/print-sums.ts';
 
@@ -88,6 +89,8 @@ export class Hub {
    * Its ring is made when the dust is first switched on.
    */
   tape: TapeRing | null = null;
+  /** Prints per second from the tape (tape/speed.ts): bounded, counts not USD. */
+  readonly speed = new TapeSpeed();
   /** Called when orders arrived for the dust. */
   onTape: () => void = () => {};
   /** A gap of a market was filled from its venue's trade history over [from, to) (the browser engine's recovery): never a flash or a sound. */
@@ -284,7 +287,12 @@ export class Hub {
       onTick: tick => this.#tick(tick),
       onLayers: message => this.store.set({ layers: message.layers }),
       onFlow: items => { this.flow.apply(items); this.onFlowChanged(); },
-      onTape: batch => { if (!this.#tapeOn || !this.tape) return; this.tape.add(batch, this.#connection, performance.now(), Date.now()); this.onTape(); },
+      onTape: batch => {
+        if (!this.#tapeOn || !this.tape) return;
+        this.tape.add(batch, this.#connection, performance.now(), Date.now());
+        this.speed.ingest(this.tape);
+        this.onTape();
+      },
       onAbsorption: (groups, minutes) => { this.absorption.add(groups); this.absorption.addMinutes(minutes); this.onAbsorptionChanged(); },
       // The large orders of the stretch are in the recording now, not among the fresh ones: the window held is asked for again.
       onRecovered: (id, from, to) => { this.#printsWindow = null; this.onRecovered(id, from, to); },

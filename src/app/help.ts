@@ -11,7 +11,7 @@ import { t } from './i18n.ts';
  * button opens (Trades, Absorption, Highlights, Sounds) has it in its panel's tool strip; a settings window opened from a pane's header
  * shares that pane's. Windows that only do a job (About, Install, the venue menu, the venue and coin pickers) explain themselves and have none.
  */
-export type HelpId = 'profile' | 'traded' | 'absorption' | 'depth' | 'oi' | 'candles' | 'footprint' | 'lt' | 'mirror' | 'volume' | 'bubbles' | 'heatmap' | 'depthPane' | 'oiPane' | 'ltPane' | 'barStats' | 'orderBook' | 'cvd' | 'book' | 'highlights' | 'sounds' | 'range' | 'liquidations' | 'keyLevels' | 'vwap' | 'delta' | 'deltaPane' | 'ls' | 'lsPane' | 'replay' | 'candlePane';
+export type HelpId = 'profile' | 'traded' | 'absorption' | 'depth' | 'oi' | 'candles' | 'footprint' | 'lt' | 'mirror' | 'volume' | 'bubbles' | 'heatmap' | 'depthPane' | 'oiPane' | 'ltPane' | 'barStats' | 'orderBook' | 'cvd' | 'book' | 'highlights' | 'sounds' | 'range' | 'liquidations' | 'keyLevels' | 'vwap' | 'delta' | 'deltaPane' | 'ls' | 'lsPane' | 'tapeSpeed' | 'tapeSpeedPane' | 'replay' | 'candlePane';
 
 export interface HelpTopic {
   title: string;
@@ -78,6 +78,18 @@ export const HELP: Readonly<Record<HelpId, HelpTopic>> = {
     title: t('Long/Short'), guide: 'lower-panes',
     tip: t('A pane under the map: the share of each exchange\'s accounts that is net long, as the exchanges publish it.'),
     body: [],
+  },
+  tapeSpeed: {
+    title: t('Tape speed'), guide: 'lower-panes',
+    tip: t('A pane under the map: how many market orders print per second over time, so stretches of fast and slow tape are visible.'),
+    body: [],
+  },
+  tapeSpeedPane: {
+    title: t('Tape speed'), guide: 'lower-panes',
+    tip: t('How many market orders print per second, regardless of size: the tape\'s pace, not dollars traded.'),
+    body: [t('Speed is a count of market orders (prints) per second, never their size in dollars: a burst of small prints moves the tape as much as a few large ones. The live figure looks back a few seconds of exchange time (Now in the header); beside it are the averages over the last minute, the last five minutes, and since this page started counting.'),
+      t('The pane draws that rate over the chart\'s time, so a stretch of fast tape stands taller than a lull. The dashed line is the five-minute average. It comes from the same live tape as the trade dust and the phone\'s Tape tab: counting begins when this page opens, a reload starts empty, and only about eighteen hours of seconds are kept. Minutes on the chart before that have no speed, which is not a quiet market.'),
+      t('A live readout of the same numbers sits in the Tape tab\'s header and beside the flow column. It has not been tested as a signal.')],
   },
   lsPane: {
     title: t('Long/Short'), guide: 'lower-panes',
@@ -211,7 +223,7 @@ export const HELP: Readonly<Record<HelpId, HelpTopic>> = {
   candlePane: {
     title: t('Tape'), guide: 'moving',
     tip: t('Every trade since the page opened, filling a phone screen: what traded at each price, the order book on both sides, large orders flashing on the rail as they arrive, and the last seconds of trades flowing left behind them.'),
-    body: [t('The tape starts when the page opens and runs for as long as it stays open: nothing is fetched first, so it opens at once, and no timeframe ever starts it again. Each row is a price: sold at market on the left, bought on the right, by every market counted, its winning side shown more strongly the more it won, and the row where the most traded is outlined. The header says since when the tape runs, how many markets it counts, and how long the page was hidden: a phone in the background gets no trades, so that time is missing from the tape. Bids rest left of the tape, asks right.'),
+    body: [t('The tape starts when the page opens and runs for as long as it stays open: nothing is fetched first, so it opens at once, and no timeframe ever starts it again. Each row is a price: sold at market on the left, bought on the right, by every market counted, its winning side shown more strongly the more it won, and the row where the most traded is outlined. The header says since when the tape runs, how many markets it counts, how fast orders are printing (Tape speed: prints per second, not dollars), and how long the page was hidden: a phone in the background gets no trades, so that time is missing from the tape. Bids rest left of the tape, asks right.'),
       t('The rail at the right lights each row where a large order just arrived, by when it arrived, with the mark of the exchange that sent the largest. The trail is every market order of the last seconds at the time it traded, now at the rail and older to the left: filled dots are buys, rings are sells, larger dots larger orders, and orders from the whale size up carry their exchange\'s mark. Glass lays the book and the tape over the trail as three pieces of glass welded together: the trail shows through the book clearly and through the tape frosted. Bricks makes each of the book\'s bars a block of glass. Drag to move the prices, pinch to zoom, double-tap to reset. Look, in Settings, changes how the trail is drawn, not what it shows.'),
       t('On glass the book follows its liquidity: a row lights up when orders are added there, a shock running out along it, and dims when they are pulled, the shock running back in; a ripple runs along a row when trades reached it. Where the price passed and no trade shows, nothing is called pulled. A large order sends a wave through the glass from where it arrived, slowed by the panes and turned back at the welds. Rows and Pulses, in Settings, change how the rows and these changes are shown.')],
   },

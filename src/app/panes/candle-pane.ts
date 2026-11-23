@@ -4,13 +4,15 @@ import type { Kernels } from '../kernels.ts';
 import { volText } from './footprint.ts';
 import { groupLevels, type Grouped } from './levels-data.ts';
 import { setText } from './lower-panes.ts';
+import { snapshot } from '../tape/speed.ts';
+import { speedFullText } from '../tape/speed-text.ts';
 import { activeIds } from '../scope.ts';
 import { PALETTES, mixHex, resolveThemeId, rgb, textOn, type Palette } from '../theme.ts';
 import { t } from '../i18n.ts';
 import { helpButton } from '../help.ts';
 import { el } from '../dom.ts';
 import { GestureRecognizer, bindTouch } from '../touch.ts';
-import { replaying } from '../replay/clock.ts';
+import { pageNow, replaying } from '../replay/clock.ts';
 import { price as fmtPrice } from '../format.ts';
 import { scaledUsd } from '../coin.ts';
 import { drawVenueMark } from '../venue-marks.ts';
@@ -292,6 +294,7 @@ export class CandlePane {
     const since = new Date(this.#tape.since), clock = `${String(since.getHours()).padStart(2, '0')}:${String(since.getMinutes()).padStart(2, '0')}`;
     const parts = [t('since {time}', { time: clock }), t('{n} markets', { n: markets })], missed = this.#gaps.missedMs;
     if (missed > 0) parts.push(t('{n} min missed while hidden', { n: Math.max(1, Math.round(missed / 60_000)) }));
+    parts.push(speedFullText(snapshot(this.hub.speed, pageNow(), this.store.state.tapeSpeed.nowMs)));
     setText(this.#readout, parts.join(' · '));
   }
 
