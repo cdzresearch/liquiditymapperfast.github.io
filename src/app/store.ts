@@ -16,6 +16,7 @@ import { readKeyLevels, type KeyLevelSettings } from './keylevels/settings.ts';
 import { readVwap, type VwapSettings } from './vwap/settings.ts';
 import { readFootprint, type FootprintSettings } from './footprint/settings.ts';
 import { readDelta, type DeltaSettings } from './delta/settings.ts';
+import { readTapeSpeed, type TapeSpeedSettings } from './tape/settings.ts';
 import { LS_METRICS, type LsMetric } from '../shared/long-short.ts';
 import { readCustomMarkets, type CustomMarkets } from './market-choice.ts';
 import { readPullWindow, type PullWindow } from './panes/pull-stack.ts';
@@ -43,7 +44,7 @@ export interface LayerLevel { id: string; side: string; price: number; notionalU
  * Which panes are on the first time. No pane under the map is (Karl, 2026-10-17: depth and open interest were, and no extra pane should be):
  * each is one switch away. The flow column and the book beside the map are on.
  */
-export const DEFAULT_SHOW: AppState['show'] = { profile: true, traded: false, depth: false, oi: false, delta: false, ls: false, candles: true, footprint: false, lt: false, mirror: true, volume: true, bubbles: true, cvd: true, book: true };
+export const DEFAULT_SHOW: AppState['show'] = { profile: true, traded: false, depth: false, oi: false, delta: false, ls: false, tapeSpeed: false, candles: true, footprint: false, lt: false, mirror: true, volume: true, bubbles: true, cvd: true, book: true };
 /**
  * The panes a first visit starts with. The flow column and the book each take a few hundred pixels beside the map, so on a window that is wide enough
  * for the map to stay readable with both (a phone has its tabs instead) they start on; a medium window (a tablet held sideways, a small laptop)
@@ -85,7 +86,9 @@ export interface AppState {
   oiParts: OiPart[];
   /** One market's `oi` from an inverse market: the one price its coins are put at (its USD over it, `Hub.oiSeries`); 0 for a linear market. */
   oiPrice: number;
-  show: { profile: boolean; /** The traded-volume column beside the profile (not on phones). */ traded: boolean; depth: boolean; oi: boolean; /** The Delta pane under the map (taker delta and CVD by candle). */ delta: boolean; /** The Long/Short pane (the venues' published long/short account ratios). */ ls: boolean; candles: boolean; footprint: boolean; lt: boolean; mirror: boolean; volume: boolean; bubbles: boolean; /** The taker-flow (CVD) column left of the map, and the order book column right of it. */ cvd: boolean; book: boolean };
+  show: { profile: boolean; /** The traded-volume column beside the profile (not on phones). */ traded: boolean; depth: boolean; oi: boolean; /** The Delta pane under the map (taker delta and CVD by candle). */ delta: boolean; /** The Long/Short pane (the venues' published long/short account ratios). */ ls: boolean; /** The Tape speed pane under the map (prints per second over time). */ tapeSpeed: boolean; candles: boolean; footprint: boolean; lt: boolean; mirror: boolean; volume: boolean; bubbles: boolean; /** The taker-flow (CVD) column left of the map, and the order book column right of it. */ cvd: boolean; book: boolean };
+  /** The Tape speed pane's settings (whether it shows is `show.tapeSpeed`). */
+  tapeSpeed: TapeSpeedSettings;
   /** The CVD column's settings. */
   cvd: CvdSettings;
   /** What counts as standing out (anomalous volume, OI change, ...), shared by every pane. */
@@ -155,7 +158,7 @@ export interface AppState {
    * Shared cursor: `t` is authoritative; each pane converts it to its own x. `price` is only set by the heatmap. `touch` marks a hover
    * that a finger pinned (it stays until the next tap or drag, and its readouts sit above the finger).
    */
-  hover: { t: number; price: number | null; y: number; source: 'heat' | 'depth' | 'oi' | 'lt' | 'bars' | 'cvd' | 'delta' | 'ls'; touch?: boolean } | null;
+  hover: { t: number; price: number | null; y: number; source: 'heat' | 'depth' | 'oi' | 'lt' | 'bars' | 'cvd' | 'delta' | 'ls' | 'tapeSpeed'; touch?: boolean } | null;
   /** The Range tool's selection (a box on the map, or a stretch of time), being dragged or made; and whether the next drag selects (range/). Not saved. */
   range: RangeSelection | null;
   rangeTool: boolean;
@@ -165,7 +168,7 @@ export interface AppState {
 
 type Listener = (state: AppState, changed: ReadonlySet<keyof AppState>) => void;
 
-const PERSISTED: (keyof AppState)[] = ['keepAwake', 'material', 'timeZone', 'timeframe', 'layer', 'show', 'cvd', 'heatmapSource', 'disabledVenues', 'scope', 'highlight', 'absorption', 'tradeBubbles', 'liquidations', 'keyLevels', 'vwap', 'footprint', 'delta', 'sounds', 'heat', 'lt', 'barStats', 'barStatOptions', 'grouping', 'ladderMode', 'ladderShow', 'ladderCurves', 'pullStack', 'ladderVenue', 'ladderVenues', 'theme', 'themePicked', 'defaultsRev', 'traded', 'oiMarkets', 'lsMetric', 'customMarkets'];
+const PERSISTED: (keyof AppState)[] = ['keepAwake', 'material', 'timeZone', 'timeframe', 'layer', 'show', 'cvd', 'heatmapSource', 'disabledVenues', 'scope', 'highlight', 'absorption', 'tradeBubbles', 'liquidations', 'keyLevels', 'vwap', 'footprint', 'delta', 'tapeSpeed', 'sounds', 'heat', 'lt', 'barStats', 'barStatOptions', 'grouping', 'ladderMode', 'ladderShow', 'ladderCurves', 'pullStack', 'ladderVenue', 'ladderVenues', 'theme', 'themePicked', 'defaultsRev', 'traded', 'oiMarkets', 'lsMetric', 'customMarkets'];
 function readSaved(): Partial<AppState> {
   try { const raw = window.localStorage.getItem('hlm-app-v2'); return raw ? JSON.parse(raw) as Partial<AppState> : {}; } catch { return {}; }
 }
@@ -176,7 +179,7 @@ export type LadderCurves = (typeof LADDER_CURVES)[number];
 
 /** The settings a saved layout holds: what the chart shows and how, never the coin, the venues, the theme, the time zone or the sounds. */
 export const LAYOUT_KEYS = ['timeframe', 'layer', 'show', 'cvd', 'scope', 'highlight', 'absorption', 'tradeBubbles', 'liquidations', 'keyLevels', 'vwap', 'footprint', 'delta',
-  'heat', 'lt', 'barStats', 'barStatOptions', 'grouping', 'ladderMode', 'ladderShow', 'ladderCurves', 'pullStack', 'traded', 'oiMarkets', 'lsMetric', 'customMarkets'] as const satisfies readonly (keyof AppState)[];
+  'tapeSpeed', 'heat', 'lt', 'barStats', 'barStatOptions', 'grouping', 'ladderMode', 'ladderShow', 'ladderCurves', 'pullStack', 'traded', 'oiMarkets', 'lsMetric', 'customMarkets'] as const satisfies readonly (keyof AppState)[];
 export type Settings = Pick<AppState, (typeof LAYOUT_KEYS)[number]>;
 
 /** The timeframes (hub.ts TIMEFRAMES; a test keeps the two the same). */
@@ -208,7 +211,7 @@ export function readSettings(saved: Partial<Record<keyof AppState, unknown>>): S
     show: sameShape(defaultShow(), saved.show),
     cvd: readCvd(saved.cvd), highlight: readHighlight(saved.highlight), absorption: readAbsorption(saved.absorption), tradeBubbles: readBubbles(saved.tradeBubbles),
     liquidations: readLiquidations(saved.liquidations), keyLevels: readKeyLevels(saved.keyLevels), vwap: readVwap(saved.vwap), footprint: readFootprint(saved.footprint),
-    delta: readDelta(saved.delta), lsMetric: (LS_METRICS as readonly unknown[]).includes(saved.lsMetric) ? saved.lsMetric as LsMetric : 'accounts', pullStack: readPullWindow(saved.pullStack), traded: readTraded(saved.traded),
+    delta: readDelta(saved.delta), tapeSpeed: readTapeSpeed(saved.tapeSpeed), lsMetric: (LS_METRICS as readonly unknown[]).includes(saved.lsMetric) ? saved.lsMetric as LsMetric : 'accounts', pullStack: readPullWindow(saved.pullStack), traded: readTraded(saved.traded),
     scope: saved.scope === 'spot' || saved.scope === 'perp' ? saved.scope : 'all',
     heat: { ...heat, style: HEAT_STYLES.some(style => style.id === heat.style) ? heat.style : 'size', smooth: heat.smooth === 'off' ? 'off' : 'auto', contrast: clampContrast(heat.contrast) },
     lt: { ...sameShape(LT_DEFAULTS, saved.lt), view: lt?.view === 'imbalance' ? 'imbalance' : 'lines' },
